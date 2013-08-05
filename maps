@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Map</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      html, body, #map-canvas {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-FlSbhVUzViBiK-e4I34KNi7GMUmAaNA&sensor=false"></script>
+    <script>
+var map;
+var prev_x=0;
+function getnewdata()
+{
+var xmlhttp;
+if (window.XMLHttpRequest)
+  {// code for IE7+, Firefox, Chrome, Opera, Safari
+  xmlhttp=new XMLHttpRequest();
+  }
+else
+  {// code for IE6, IE5
+  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+ 
+	xmlhttp.onreadystatechange=function()
+  {
+  if (xmlhttp.readyState==4 && xmlhttp.status==200)
+    {
+    	var temp = xmlhttp.responseText;
+			temp = temp.split("\"");
+		var x = temp[3];
+		var y = temp[7];
+    var z = temp[11];
+console.log(temp);
+console.log(x+"   "+y+"  "+z);
+		addMarker(x,y,z);
+    }
+  }
+xmlhttp.open("GET","http://localhost/tweet/assign/getlatestdata.php",true);
+xmlhttp.send();
+}
+
+function initialize() {
+  var mapOptions = {
+    zoom: 5,
+    center: new google.maps.LatLng(21.02796250773456, 71.54999999999995),
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  };
+ map = new google.maps.Map(document.getElementById('map-canvas'),
+      mapOptions);
+}
+
+/*
+var reader = new FileReader();
+
+function readText(that){
+
+	if(that.files && that.files[0]){
+		var reader = new FileReader();
+		reader.onload = function (e) {  
+			var output=e.target.result;
+		
+			//process text to show only lines with "@":				
+			output=output.split("\n").filter(/./.test, /\@/).join("\n");
+
+			document.getElementById('main').innerHTML= output;
+		};//end onload()
+		reader.readAsText(that.files[0]);
+	}//end if html5 filelist support
+} 
+*/
+function update()
+{
+	getnewdata();
+	//alert("hi");
+	 var t=setTimeout(function(){update()},100)
+}
+
+/*
+newmarker = map.addMarker(new MarkerOptions().position(latlng).title(tempTask.getTitle()).icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul)))
+map.addMarker(new MarkerOptions().position(new LatLng(lat, lon))
+                                     .title(getString(title))
+                                     .snippet(getString(snippet)));
+*/
+
+function addMarker(x,y,z) {
+	//map.addMarker(new MarkerOptions().position(new google.maps.LatLng(x, y))
+  //                                   .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_blue)));
+
+  var marker = new google.maps.Marker({
+    position:new google.maps.LatLng(x,y),
+		//animation: google.maps.Animation.DROP,
+  });
+ 
+  if( x != prev_x)
+			marker.setAnimation(google.maps.Animation.DROP);
+  prev_x = x;
+
+  if (z > 0)
+			marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png');
+  else if( z == 0)
+			marker.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png');
+  else if( z<0 )
+			marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
+
+   marker.setMap(map);
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
+window.onload=update();
+
+    </script>
+  </head>
+  <body>
+    <div id="map-canvas"></div>
+  </body>
+</html>
